@@ -1,0 +1,5 @@
+serverport: 18080
+serverpath: /b-mvc
+scanpackage: com.beginner.business
+encoding: UTF-8
+
