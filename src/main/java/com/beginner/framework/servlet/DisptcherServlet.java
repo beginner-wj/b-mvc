@@ -157,13 +157,22 @@ public class DisptcherServlet extends HttpServlet {
                 Autowired autowired = field.getAnnotation(Autowired.class);
                 String beanName = autowired.value().trim();
                 if(beanName.equals("")) {
-                    beanName = field.getType().getName();
+                    beanName = lowerFirest(field.getType().getSimpleName());
                     logger.info("find Autowired:"+beanName);
                 }
                 //为true,则表示可以忽略访问权限的限制，直接调用。
-                field.setAccessible(true);
+                // 开启修改权限
+                if (!field.isAccessible()){
+                    field.setAccessible(true);
+                }
                 try {
-                    field.set(entry.getValue(), ioc.get(beanName));
+                    Object obj = entry.getValue();
+                    Object bean = ioc.get(beanName);
+                    field.set(obj, bean);
+                    System.out.println("entry.getValue==>" + (obj ==null));
+                    if (field.isAccessible()){
+                        field.setAccessible(false);
+                    }
                 }catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -194,7 +203,7 @@ public class DisptcherServlet extends HttpServlet {
                     }else {
                         beanName = lowerFirest(clazz.getSimpleName());
                         ioc.put(beanName, clazz.newInstance());
-                        logger.info("add ioc bean Service:"+beanName);
+                        logger.info("add ioc bean lowerFirest Service:"+beanName);
                     }
                     Class<?>[] interfaces = clazz.getInterfaces();
                     //找到接口实现类
