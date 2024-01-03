@@ -15,16 +15,21 @@ public class Handler {
     public Object controller;
     public Method method;
     public Pattern pattern;
+
+
     public Map<String,Integer> paramIndexMapping;
 
     public String requestMethod;
 
-    public Handler(Pattern pattern, Object controller, Method method) {
+
+
+    public Handler(Pattern pattern, Object controller, Method method,String requestMethod) {
 
         this.controller = controller;
         this.method = method;
         this.pattern = pattern;
         this.paramIndexMapping = new HashMap<String,Integer>();
+        this.requestMethod = requestMethod;
         putParamIndexMapping(method);
     }
 

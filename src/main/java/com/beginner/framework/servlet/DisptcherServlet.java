@@ -1,9 +1,8 @@
 package com.beginner.framework.servlet;
 
-import com.beginner.framework.annotation.Autowired;
-import com.beginner.framework.annotation.Controller;
-import com.beginner.framework.annotation.RequestMapping;
-import com.beginner.framework.annotation.Service;
+import com.beginner.business.controller.DemoController;
+import com.beginner.framework.annotation.*;
+import com.beginner.framework.constant.SysConstant;
 import com.beginner.framework.domain.Handler;
 import com.beginner.framework.exception.BException;
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +42,7 @@ public class DisptcherServlet extends HttpServlet {
         this.scanPackage = scanPackage;
     }
 
-    public DisptcherServlet(String scanPackage, String baseUrl){
+    public DisptcherServlet(String scanPackage,String baseUrl){
         this.scanPackage = scanPackage;
         this.baseUrl = baseUrl;
     }
@@ -63,7 +63,7 @@ public class DisptcherServlet extends HttpServlet {
         try {
             doRequest(baseServletRequest,baseServletResponse);
         } catch (BException e) {
-            throw new RuntimeException(e);
+            DemoController.outResponseMsg(baseServletResponse,e.getMessage());
         }
     }
 
@@ -80,6 +80,13 @@ public class DisptcherServlet extends HttpServlet {
             baseServletResponse.getWriter().write("404 not found");
             return;
         }
+        //校验请求类型
+        String requestMethod = handler.requestMethod.toUpperCase();
+        String currMethod = baseServletRequest.getHttpRequest().getMethod().toUpperCase();
+        if(!(requestMethod).equals(currMethod)){
+            throw new BException("not support " + currMethod);
+        }
+
         //获取方法的参数列表
         Class<?> [] paramTypes = handler.method.getParameterTypes();
         //保存所有需要自动赋值的参数值
@@ -135,10 +142,15 @@ public class DisptcherServlet extends HttpServlet {
                 if(!method.isAnnotationPresent(RequestMapping.class)) {
                     continue;
                 };
+
+                RequestMethod requestMethod = method.getAnnotation(RequestMethod.class);
+                String rMethod = requestMethod == null ?
+                           SysConstant.GET : requestMethod.method() ;//默认get请求
+
                 RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
                 String mappingUrl =( "/"+baseUrl+"/"+ controllerUrl + "/" + requestMapping.value()).replaceAll("/+", "/");
                 Pattern pattern = Pattern.compile(mappingUrl);
-                handlerMapping.add(new Handler(pattern, entry.getValue(),method));
+                handlerMapping.add(new Handler(pattern, entry.getValue(),method,rMethod));
                 logger.info("add handlerMapping:"+mappingUrl+"->"+method);
             }
         }
@@ -170,7 +182,6 @@ public class DisptcherServlet extends HttpServlet {
                     Object obj = entry.getValue();
                     Object bean = ioc.get(beanName);
                     field.set(obj, bean);
-                    System.out.println("entry.getValue==>" + (obj ==null));
                     if (field.isAccessible()){
                         field.setAccessible(false);
                     }
