@@ -1,6 +1,9 @@
 package com.beginner.framework.servlet;
 
-import com.beginner.framework.annotation.*;
+import com.beginner.framework.annotation.Autowired;
+import com.beginner.framework.annotation.Controller;
+import com.beginner.framework.annotation.RequestMapping;
+import com.beginner.framework.annotation.Service;
 import com.beginner.framework.domain.Handler;
 import com.beginner.framework.exception.BException;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +25,6 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class DisptcherServlet extends HttpServlet {
 
     private static final Logger logger = LogManager.getLogger(DisptcherServlet.class);
@@ -40,7 +42,7 @@ public class DisptcherServlet extends HttpServlet {
         this.scanPackage = scanPackage;
     }
 
-    public DisptcherServlet(String scanPackage,String baseUrl){
+    public DisptcherServlet(String scanPackage, String baseUrl){
         this.scanPackage = scanPackage;
         this.baseUrl = baseUrl;
     }
@@ -56,7 +58,6 @@ public class DisptcherServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        super.service(request, response);
         BaseServletRequest baseServletRequest = new BaseServletRequest(request);
         BaseServletResponse baseServletResponse = new BaseServletResponse(response);
         try {
@@ -65,7 +66,7 @@ public class DisptcherServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
     }
-    
+
     private void doRequest(BaseServletRequest baseServletRequest,BaseServletResponse baseServletResponse) throws BException {
         baseServletResponse.setCharacterEncoding("UTF-8");
         String url  = baseServletRequest.getRequestURI();
